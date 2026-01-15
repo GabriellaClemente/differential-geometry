@@ -17,7 +17,7 @@ Fixpoint exp n x : R :=
   match n with 0 => R1 | S n => exp n x * x end.
 Notation "x ^ n" := (exp n x) (at level 30, right associativity).
 Parameter sum : (nat -> R) -> R.
-Notation "Σ_{ n } t" := (sum (fun n : nat => t)) (at level 20, t at level 0, format "Σ_{ n }  t").
+Notation "Σ_{ n } t" := (sum (fun n : nat => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 Class smooth (M : Set) : Type := g_of : nat->nat->M->R.
 Parameter δ : nat -> nat -> R.
 
@@ -32,6 +32,7 @@ Parameter O : R -> R.
 
 Class RM := {
   M :> Set;
+
   g : smooth M;
   Ｒ : nat -> nat -> nat -> nat -> R;
 }.
@@ -51,7 +52,7 @@ Class point (M : RM) := {
   ax0 : forall i, x i (pt; pt_in) = 0;
   ax1 : forall i j, g i j pt = δ i j;
   ax2 : forall i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
-  ax3 : forall i j k l p, ((∂² (g i j) / ∂ x k l) pt * x k p * x l p) / 2 = - (Ｒ i k l j * x k p * x l p) / 3 ;
+  ax3 : forall i j k l p, ((∂² (g i j) / ∂ x k l) pt * x k p * x l p) / 2 = - ((Ｒ i k l j * x k p * x l p) / 3 );
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
@@ -78,9 +79,12 @@ Admitted.
 Lemma under_sigma (f g : nat -> R) : (forall k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 Admitted.
 
+Lemma min_sum (a : nat -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
+Admitted.
+
 Theorem Thm (M:RM) : forall (pt:point M),
   forall i j (p:{p:M| U_pt p}),
-  g i j p.1 = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j * x k p * x l p))/3 + O ((norm (fun i => x i p)) ^ 3).
+  g i j p.1 = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j * x k p * x l p)/3) + O ((norm (fun i => x i p)) ^ 3).
 Proof.
 intros pt **.
 rewrite (smoothness2 M pt).
@@ -89,3 +93,7 @@ rewrite under_sigma_0.
 2: intro; rewrite ax2; apply mul0.
 rewrite add0.
 rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun l => ax3 i j k l p))).
+rewrite (under_sigma _ _ (fun k => min_sum _)).
+rewrite min_sum.
+reflexivity.
+Qed.

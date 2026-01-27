@@ -4,7 +4,7 @@ Set Primitive Projections.
 Notation "x ^ n" := (pow n x) (at level 30, right associativity).
 Parameter sum : (nat -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : nat => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
-Class smooth (M : Set) : Type := g_of : nat->nat->M->R.
+Class metric (M : Set) : Type := g_of : nat->nat->M->R.
 Parameter δ : nat -> nat -> R.
 
 Notation "( x ; y )" := (exist _ x y)
@@ -19,7 +19,7 @@ Parameter O : R -> R.
 Class RM := {
   M :> Set;
   
-  g : smooth M;
+  g : metric M;
   Ｒ : nat -> nat -> nat -> nat -> R;
 }.
 
@@ -29,6 +29,8 @@ Parameter partial : forall {M U}, (M -> R) -> (nat -> {p:M| U p} -> R) -> nat ->
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
 Parameter partial2 : forall {M U}, (M -> R) -> (nat -> {p:M| U p} -> R) -> nat -> nat -> (M -> R).
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
+Parameter partial' : forall {M}, nat -> M. 
+Notation "∂ k" := (partial' k) (at level 10, k at level 0).
 
 Class point (M : RM) := {
   pt :> M;
@@ -75,3 +77,13 @@ rewrite (min_sum).
 rewrite <- Rminus_def.
 reflexivity.
 Qed.
+
+Section Riemannian_metrics.
+
+Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
+
+Parameter nabla : forall {M}, nat -> nat -> M. 
+Notation "∇" := nabla.
+
+Axiom Christoffel_symbols : forall M, forall g : metric M , exists Γ : (nat->nat->nat->M->R) , forall i j ,
+∇ i j = Σ_{k} Γ i j k (∂ k).

@@ -40,7 +40,7 @@ Class point (M : RM) := {
   ax0 : forall i, x i (pt; pt_in) = 0;
   ax1 : forall i j, g i j pt = δ i j;
   ax2 : forall i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
-  ax3 : forall i j k l p, ((∂² (g i j) / ∂ x k l) pt * x k p * x l p) / 2 = - ((Ｒ i k l j * x k p * x l p) / 3) ;
+  ax3 : forall i j k l p, ((∂² (g i j) / ∂ x k l) pt * x k p * x l p) / 2 = - ((Ｒ i k l j * x k p * x l p) / 3);
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
@@ -63,7 +63,7 @@ Admitted.
 
 Theorem Thm (M:RM) : forall (pt:point M),
   forall i j (p:{p:M| U_pt p}),
-  g i j p.1 = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j * x k p * x l p /3)) + O ((norm (fun i => x i p)) ^ 3).
+  g i j p.1 = δ i j - (Σ_{k} Σ_{l} ((Ｒ i k l j) * (x k p) * (x l p) /3)) + O ((norm (fun i => x i p)) ^ 3).
 Proof.
 intros pt **.
 rewrite (smoothness2 M pt).

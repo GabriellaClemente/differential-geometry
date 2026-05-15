@@ -25,7 +25,7 @@ Parameter partial' : forall {M}, nat -> M.
 Notation "∂ k" := (partial' k) (at level 10, k at level 0).
 
 Class preRM := {
-  M :> Set;  
+  M :> Set;
   g : metric M;
   Ｒ : nat -> nat -> nat -> nat -> R;
 }.
@@ -39,7 +39,7 @@ Class has_coordinates {M : preRM} (pt : M) := {
   ax0 : forall i, x i (pt; pt_in) = 0;
   ax1 : forall i j, g i j pt = δ i j;
   ax2 : forall i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
-  ax3 : forall i j k l p, ((∂² (g i j) / ∂ x k l) pt * x k p * x l p) / 2 = - ((Ｒ i k l j * x k p * x l p) / 3) ;
+  ax3 : forall i j k l p, ((∂² (g i j) / ∂ x k l) pt * (x k p) * (x l p)) / 2 = - (((Ｒ i k l j) * (x k p) * (x l p)) / 3);
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
@@ -73,7 +73,7 @@ Admitted.
 
 Theorem Thm (M:RM) : forall (pt:M),
   let preRM := M.(structure) in
-  let coord := M.(coordinates) pt in 
+  let coord := M.(coordinates) pt in
   forall i j (p:M) (p_in:U_pt p),
   g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j * x k (p; p_in) * x l (p; p_in) /3)) + O ((norm (fun i => x i (p; p_in))) ^ 3).
 Proof.
@@ -95,8 +95,8 @@ Section Riemannian_metrics.
 
 Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
 
-Parameter nabla : forall {M}, nat -> nat -> M. 
+Parameter nabla : forall {M : RM}, nat -> nat -> M.
 Notation "∇" := nabla.
 
-Axiom Christoffel_symbols : forall M, forall g : metric M , exists Γ : (nat->nat->nat->M->R) , forall i j ,
+Axiom Christoffel_symbols : forall (M : RM), exists Γ : (nat->nat->nat->M->R) , forall i j ,
 ∇ i j = Σ_{k} Γ i j k (∂ k).

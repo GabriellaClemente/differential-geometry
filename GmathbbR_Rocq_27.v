@@ -100,3 +100,9 @@ Notation "∇" := nabla.
 
 Axiom Christoffel_symbols : forall (M : RM), exists Γ : (nat->nat->nat->M->R) , forall i j ,
 ∇ i j = Σ_{k} Γ i j k (∂ k).
+
+Example circle : RM.
+unshelve esplit.
+unshelve esplit.
+exact {x : R & { y : R | x * x + y * y = 1} }.
+

@@ -95,7 +95,7 @@ Section Riemannian_metrics.
 
 Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
 
-Parameter nabla : forall {M : RM}, nat -> nat -> M.
+Parameter nabla : forall {M : RM}, nat -> nat -> R.
 Notation "∇" := nabla.
 
 Axiom Christoffel_symbols : forall (M : RM), exists Γ : (nat->nat->nat->M->R) , forall i j ,

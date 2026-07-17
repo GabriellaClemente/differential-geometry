@@ -134,8 +134,8 @@ Lemma lem1 : forall (M : RM) i j k l pt,
   let pt_in := coord.(pt_in) in
  Ｒ k l i j pt = - (Σ_{m} (g m l pt * (∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * (∂ Γ^{m}_{i k} / ∂ x j) pt)).
 Proof.
-intros.
-assert (forall m, (∂ Γ^{m}_{j k} / ∂ x i) pt0 - (∂ Γ^{m}_{i k} / ∂ x j) pt0 = - ((∂ Γ^{m}_{i j} / ∂ x k) pt0 + 2 * ((∂ Γ^{m}_{i k} / ∂ x j) pt0))).
+intros M i j k l pt *.
+assert (forall m, (∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt = - ((∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * ((∂ Γ^{m}_{i k} / ∂ x j) pt))).
 intro.
 Admitted.
 

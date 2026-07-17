@@ -71,7 +71,7 @@ Admitted.
 Lemma min_sum (a : nat -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
 Admitted.
 
-Theorem Thm (M:RM) : forall (pt:M),
+Theorem Thm1 (M:RM) : forall (pt:M),
   let preRM := M.(structure) in
   let coord := M.(coordinates) pt in
   forall i j (p:M) (p_in:U_pt p),
@@ -91,6 +91,12 @@ rewrite <- Rminus_def.
 reflexivity.
 Qed.
 
+Example circle : RM.
+unshelve esplit.
+unshelve esplit.
+exact {x : R & { y : R | x * x + y * y = 1} }.
+Abort.
+
 Section Riemannian_metrics.
 
 Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
@@ -98,11 +104,36 @@ Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j 
 Parameter nabla : forall {M : RM}, nat -> nat -> R.
 Notation "∇" := nabla.
 
-Axiom Christoffel_symbols : forall (M : RM), exists Γ : (nat->nat->nat->M->R) , forall i j ,
-∇ i j = Σ_{k} Γ i j k (∂ k).
+Parameter Gamma : forall M:RM, nat->nat->nat->M->R.
+Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
 
-Example circle : RM.
-unshelve esplit.
-unshelve esplit.
-exact {x : R & { y : R | x * x + y * y = 1} }.
+Axiom Christoffel_symbols : forall (M : RM) i j, ∇ i j = Σ_{k} Γ^{k}_{i j} (∂ k).
 
+Axiom Christoffel_commutes : forall (M : RM) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
+
+Axiom Christoffel_sum : forall (M : RM) i j k l pt,
+  let coord := M.(coordinates) pt in
+  (∂ Γ^{k}_{i j} / ∂ x l) pt + (∂ Γ^{k}_{i l} / ∂ x j) pt + (∂ Γ^{k}_{j l} / ∂ x i) pt = 0.
+
+Axiom Christoffel_R : forall (M : RM) i j k l pt,
+  let coord := M.(coordinates) pt in
+ Ｒ k l i j pt = Σ_{m} (g m l pt * (∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt).
+
+Lemma lem1 : forall (M : RM) i j k l pt,
+  let coord := M.(coordinates) pt in
+ Ｒ k l i j pt = - (Σ_{m} (g m l pt * (∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * (∂ Γ^{m}_{i k} / ∂ x j) pt)).
+Proof.
+intros.
+assert (forall m, (∂ Γ^{m}_{j k} / ∂ x i) pt0 - (∂ Γ^{m}_{i k} / ∂ x j) pt0 = - ((∂ Γ^{m}_{i j} / ∂ x k) pt0 + 2 * ((∂ Γ^{m}_{i k} / ∂ x j) pt0))).
+intro.
+Admitted.
+
+Axiom axR1 : forall (M : RM) i j k l pt, let preRM := M.(structure) in Ｒ i j k l pt = Ｒ k l i j pt.
+Axiom axR2 : forall (M : RM) i j k l pt, let preRM := M.(structure) in Ｒ i j k l pt = - Ｒ j i k l pt.
+
+Lemma lem2 : forall (M : RM) i j k l pt (p:M) (p_in:U_pt p),
+  let preRM := M.(structure) in
+  let coord := M.(coordinates) pt in
+  let x := x (pt:=pt) in
+  2 * Ｒ i k j l pt * x i (p; p_in) * x j (p; p_in) = 3 * ((∂² (g i j) / ∂ x k l) pt * x i (p; p_in) * x j (p; p_in)).
+Proof.

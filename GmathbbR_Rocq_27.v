@@ -21,9 +21,9 @@ Parameter O : R -> R.
 Class belongs {M:Type} (P:M->Prop) x := bb : P x.
 Notation "x ∈ P" := (belongs P x) (at level 70).
 
-Parameter partial : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> (M -> R).
+Parameter partial : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> forall p {_:p ∈ U}, R.
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
-Parameter partial2 : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> dim -> (M -> R).
+Parameter partial2 : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> dim -> forall p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
 Parameter partial' : forall {M}, dim -> M. 
 Notation "∂ k" := (partial' k) (at level 10, k at level 0).
@@ -61,6 +61,7 @@ Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, f
 
 Axiom smoothness2 : forall M:RM, forall (pt:M) (p:M),
 let coord := M.(coordinates) pt in
+let pt_in := coord.(pt_in) in
 forall (p_in:p ∈ U_pt) i j,
  g i j p
  = g i j pt + (Σ_{k} ((∂ (g i j) / ∂ x k) pt * x k p))
@@ -120,14 +121,17 @@ Axiom Christoffel_commutes : forall (M : RM) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
 
 Axiom Christoffel_sum : forall (M : RM) i j k l pt,
   let coord := M.(coordinates) pt in
+  let pt_in := coord.(pt_in) in
   (∂ Γ^{k}_{i j} / ∂ x l) pt + (∂ Γ^{k}_{i l} / ∂ x j) pt + (∂ Γ^{k}_{j l} / ∂ x i) pt = 0.
 
 Axiom Christoffel_R : forall (M : RM) i j k l pt,
   let coord := M.(coordinates) pt in
+  let pt_in := coord.(pt_in) in
  Ｒ k l i j pt = Σ_{m} (g m l pt * (∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt).
 
 Lemma lem1 : forall (M : RM) i j k l pt,
   let coord := M.(coordinates) pt in
+  let pt_in := coord.(pt_in) in
  Ｒ k l i j pt = - (Σ_{m} (g m l pt * (∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * (∂ Γ^{m}_{i k} / ∂ x j) pt)).
 Proof.
 intros.
@@ -141,5 +145,6 @@ Axiom axR2 : forall (M : RM) i j k l pt, let preRM := M.(structure) in Ｒ i j k
 Lemma lem2 : forall (M : RM) i j k l pt (p:M) (p_in:p ∈ U_pt),
   let preRM := M.(structure) in
   let coord := M.(coordinates) pt in
+  let pt_in := coord.(pt_in) in
   2 * Ｒ i k j l pt * x i p * x j p = 3 * ((∂² (g i j) / ∂ x k l) pt * x i p * x j p).
 Proof.

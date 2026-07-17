@@ -25,8 +25,6 @@ Parameter partial : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p �
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
 Parameter partial2 : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> dim -> forall p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
-Parameter partial' : forall {M}, dim -> M. 
-Notation "∂ k" := (partial' k) (at level 10, k at level 0).
 
 Class preRM := {
   M :> Set;
@@ -109,13 +107,16 @@ Section Riemannian_metrics.
 
 Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
 
-Parameter nabla : forall {M : RM}, dim -> dim -> R.
+Parameter nabla : forall {M : RM}, dim -> dim -> M -> R.
 Notation "∇" := nabla.
 
 Parameter Gamma : forall M:RM, dim->dim->dim->M->R.
 Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
 
-Axiom Christoffel_symbols : forall (M : RM) i j, ∇ i j = Σ_{k} Γ^{k}_{i j} (∂ k).
+Axiom Christoffel_symbols : forall (M : RM) i j pt,
+  let coord := M.(coordinates) pt in
+  let pt_in := coord.(pt_in) in
+  ∇ i j pt = Σ_{k} (∂  Γ^{k}_{i j} / ∂ x k) pt.
 
 Axiom Christoffel_commutes : forall (M : RM) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
 

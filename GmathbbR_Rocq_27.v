@@ -2,32 +2,33 @@ From Stdlib Require Import Reals Utf8.
 Open Scope R_scope.
 Set Primitive Projections.
 Set Keyed Unification.
+
+Parameter dim : Type.
+
 Notation "x ^ n" := (pow n x) (at level 30, right associativity).
-Parameter sum : (nat -> R) -> R.
-Notation "Σ_{ n } t" := (sum (fun n : nat => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
-Class metric (M : Set) : Type := g_of : nat->nat->M->R.
-Parameter δ : nat -> nat -> R.
+Class metric (M : Set) : Type := g_of : dim->dim->M->R.
+Parameter δ : dim -> dim -> R.
 
 Notation "( x ; y )" := (exist _ x y)
   (at level 0, format "'[' ( x ;  '/ ' y ) ']'").
 Notation "x .1" := (proj1_sig x) (at level 1, left associativity, format "x .1").
 
-Parameter norm : (nat -> R) -> R.
+Parameter norm : (dim -> R) -> R.
 Notation "|| x ||" := (norm x) (at level 0).
 
 Parameter O : R -> R.
 
-Parameter partial : forall {M U}, (M -> R) -> (nat -> {p:M| U p} -> R) -> nat -> (M -> R).
+Parameter partial : forall {M U}, (M -> R) -> (dim -> {p:M| U p} -> R) -> dim -> (M -> R).
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
-Parameter partial2 : forall {M U}, (M -> R) -> (nat -> {p:M| U p} -> R) -> nat -> nat -> (M -> R).
+Parameter partial2 : forall {M U}, (M -> R) -> (dim -> {p:M| U p} -> R) -> dim -> dim -> (M -> R).
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
-Parameter partial' : forall {M}, nat -> M. 
+Parameter partial' : forall {M}, dim -> M. 
 Notation "∂ k" := (partial' k) (at level 10, k at level 0).
 
 Class preRM := {
   M :> Set;
   g : metric M;
-  Ｒ : nat -> nat -> nat -> nat -> M -> R;
+  Ｒ : dim -> dim -> dim -> dim -> M -> R;
 }.
 
 (*Coercion M : RM >-> Sortclass.*) (* needed with Coq <= 8.19 *)
@@ -35,7 +36,7 @@ Class preRM := {
 Class has_coordinates {M : preRM} (pt : M) := {
   U_pt : M -> Prop;
   pt_in : U_pt pt;
-  x : nat -> {p:M| U_pt p} -> R;
+  x : dim -> {p:M| U_pt p} -> R;
   ax0 : forall i, x i (pt; pt_in) = 0;
   ax1 : forall i j, g i j pt = δ i j;
   ax2 : forall i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
@@ -52,6 +53,9 @@ Class RM := {structure :> preRM; coordinates :> forall pt, has_coordinates pt}.
 
 Existing Instance coordinates.
 
+Parameter sum : (dim -> R) -> R.
+Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+
 Axiom smoothness2 : forall M:RM, forall (pt:M) (p:M),
 let x := x (pt:=pt) in
 forall (p_in:U_pt p) i j,
@@ -62,13 +66,13 @@ forall (p_in:U_pt p) i j,
 
 (* Thm: $g_{ij} = \delta_{ij} - \frac{1}{3} \Sigma_{k, l} R_{iklj}x_kx_l + O(\|x\|^3)$ *)
 
-Lemma under_sigma_0 (f : nat -> R) : (forall k, f k = 0) -> Σ_{k} (f k) = 0.
+Lemma under_sigma_0 (f : dim -> R) : (forall k, f k = 0) -> Σ_{k} (f k) = 0.
 Admitted.
 
-Lemma under_sigma (f g : nat -> R) : (forall k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
+Lemma under_sigma (f g : dim -> R) : (forall k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 Admitted.
 
-Lemma min_sum (a : nat -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
+Lemma min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
 Admitted.
 
 Theorem Thm1 (M:RM) : forall (pt:M),
@@ -101,10 +105,10 @@ Section Riemannian_metrics.
 
 Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
 
-Parameter nabla : forall {M : RM}, nat -> nat -> R.
+Parameter nabla : forall {M : RM}, dim -> dim -> R.
 Notation "∇" := nabla.
 
-Parameter Gamma : forall M:RM, nat->nat->nat->M->R.
+Parameter Gamma : forall M:RM, dim->dim->dim->M->R.
 Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
 
 Axiom Christoffel_symbols : forall (M : RM) i j, ∇ i j = Σ_{k} Γ^{k}_{i j} (∂ k).

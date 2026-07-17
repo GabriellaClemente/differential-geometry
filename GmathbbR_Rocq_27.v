@@ -110,7 +110,7 @@ Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j 
 Parameter nabla : forall {M : RM}, dim -> dim -> M -> R.
 Notation "∇" := nabla.
 
-Parameter Gamma : forall M:RM, dim->dim->dim->M->R.
+Parameter Gamma : forall M : RM, dim -> dim -> dim -> M -> R.
 Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
 
 Axiom Christoffel_symbols : forall (M : RM) i j pt,

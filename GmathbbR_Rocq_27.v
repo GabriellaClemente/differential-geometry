@@ -128,7 +128,7 @@ Axiom Christoffel_sum : forall (M : RM) i j k l pt,
 Axiom Christoffel_R : forall (M : RM) i j k l pt,
   let coord := M.(coordinates) pt in
   let pt_in := coord.(pt_in) in
- Ｒ k l i j pt = Σ_{m} (g m l pt * (∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt).
+ Ｒ k l i j pt = Σ_{m} (g m l pt * ((∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt)).
 
 Lemma lem1 : forall (M : RM) i j k l pt,
   let coord := M.(coordinates) pt in

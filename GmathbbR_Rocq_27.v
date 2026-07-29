@@ -6,13 +6,13 @@ Set Keyed Unification.
 Parameter dim : Type.
 
 Notation "x ^ n" := (pow n x) (at level 30, right associativity).
-Class metric (M : Set) : Type := g_of : dim->dim->M->R.
+
+Class metric (M : Set) : Type := {
+   g : dim->dim->M->R;
+   g_sym i j : g i j = g j i;
+}.
+
 Parameter δ : dim -> dim -> R.
-
-Notation "( x ; y )" := (exist _ x y)
-  (at level 0, format "'[' ( x ;  '/ ' y ) ']'").
-Notation "x .1" := (proj1_sig x) (at level 1, left associativity, format "x .1").
-
 Parameter norm : (dim -> R) -> R.
 Notation "|| x ||" := (norm x) (at level 0).
 
@@ -26,18 +26,27 @@ Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
 Parameter partial2 : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> dim -> forall p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
 
-Class preRM := {
+Class RM := {
   M :> Set;
-  g : metric M;
+  has_metric :> metric M;
+  (* nabla is morally derivable from g but via a differential equation, so we axiomatize it instead *)
+  nabla : dim -> dim -> M -> R;
+  (* Curvature is morally derivable from g (via nabla), but it is simpler to axiomatize it *)
   Ｒ : dim -> dim -> dim -> dim -> M -> R;
 }.
 
+Notation "∇" := nabla.
+
+Existing Instance has_metric.
+
 (*Coercion M : RM >-> Sortclass.*) (* needed with Coq <= 8.19 *)
 
-Class has_coordinates {M : preRM} (pt : M) := {
+(* A system of coordinates as an alternative to a topology *)
+Class has_coordinates {M : RM} (pt : M) := {
   U_pt : M -> Prop;
   pt_in : pt ∈ U_pt;
   x : dim -> forall p {p_in:p ∈ U_pt}, R;
+  (* A system of coordinates is canonically defined such that: *)
   ax0 : forall i, x i pt = 0;
   ax1 : forall i j, g i j pt = δ i j;
   ax2 : forall i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
@@ -45,19 +54,19 @@ Class has_coordinates {M : preRM} (pt : M) := {
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
-Class point {M : preRM} := {
-  pt : M;
-  coord : has_coordinates pt
+Class RMC := {
+  structure :> RM;
+  coordinates :> forall pt, has_coordinates pt;
 }.
 
-Class RM := {structure :> preRM; coordinates :> forall pt, has_coordinates pt}.
 
 Existing Instance coordinates.
 
+Check @coordinates.
 Parameter sum : (dim -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 
-Axiom smoothness2 : forall M:RM, forall (pt:M) (p:M),
+Axiom smoothness2 : forall M:RMC, forall (pt:M) (p:M),
 let coord := M.(coordinates) pt in
 let pt_in := coord.(pt_in) in
 forall (p_in:p ∈ U_pt) i j,
@@ -77,7 +86,7 @@ Admitted.
 Lemma min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
 Admitted.
 
-Theorem Thm1 (M:RM) : forall (pt:M),
+Theorem Thm1 (M:RMC) : forall (pt:M),
   let preRM := M.(structure) in
   let coord := M.(coordinates) pt in
   forall i j (p:M) (p_in:p ∈ U_pt),
@@ -97,7 +106,7 @@ rewrite <- Rminus_def.
 reflexivity.
 Qed.
 
-Example circle : RM.
+Example circle : RMC.
 unshelve esplit.
 unshelve esplit.
 exact {x : R & { y : R | x * x + y * y = 1} }.
@@ -105,32 +114,27 @@ Abort.
 
 Section Riemannian_metrics.
 
-Axiom preserves_metric : forall M, forall g : metric M, forall i j, g i j = g j i.
-
-Parameter nabla : forall {M : RM}, dim -> dim -> M -> R.
-Notation "∇" := nabla.
-
-Parameter Gamma : forall M : RM, dim -> dim -> dim -> M -> R.
+Parameter Gamma : forall M : RMC, dim -> dim -> dim -> M -> R.
 Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
 
-Axiom Christoffel_symbols : forall (M : RM) i j pt,
+Axiom Christoffel_symbols : forall (M : RMC) i j pt,
   let coord := M.(coordinates) pt in
   let pt_in := coord.(pt_in) in
   ∇ i j pt = Σ_{k} (∂  Γ^{k}_{i j} / ∂ x k) pt.
 
-Axiom Christoffel_commutes : forall (M : RM) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
+Axiom Christoffel_commutes : forall (M : RMC) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
 
-Axiom Christoffel_sum : forall (M : RM) i j k l pt,
+Axiom Christoffel_sum : forall (M : RMC) i j k l pt,
   let coord := M.(coordinates) pt in
   let pt_in := coord.(pt_in) in
   (∂ Γ^{k}_{i j} / ∂ x l) pt + (∂ Γ^{k}_{i l} / ∂ x j) pt + (∂ Γ^{k}_{j l} / ∂ x i) pt = 0.
 
-Axiom Christoffel_R : forall (M : RM) i j k l pt,
+Axiom Christoffel_R : forall (M : RMC) i j k l pt,
   let coord := M.(coordinates) pt in
   let pt_in := coord.(pt_in) in
  Ｒ k l i j pt = Σ_{m} (g m l pt * ((∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt)).
 
-Lemma lem1 : forall (M : RM) i j k l pt,
+Lemma lem1 : forall (M : RMC) i j k l pt,
   let coord := M.(coordinates) pt in
   let pt_in := coord.(pt_in) in
  Ｒ k l i j pt = - Σ_{m} (g m l pt * ((∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * (∂ Γ^{m}_{i k} / ∂ x j) pt)).
@@ -140,11 +144,11 @@ assert (forall m, (∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j)
 intro.
 Admitted.
 
-Axiom axR1 : forall (M : RM) i j k l pt, let preRM := M.(structure) in Ｒ i j k l pt = Ｒ k l i j pt.
-Axiom axR2 : forall (M : RM) i j k l pt, let preRM := M.(structure) in Ｒ i j k l pt = - Ｒ j i k l pt.
+Axiom axR1 : forall (M : RMC) i j k l pt, let RM := M.(structure) in Ｒ i j k l pt = Ｒ k l i j pt.
+Axiom axR2 : forall (M : RMC) i j k l pt, let RM := M.(structure) in Ｒ i j k l pt = - Ｒ j i k l pt.
 
-Lemma lem2 : forall (M : RM) i j k l pt (p:M) (p_in:p ∈ U_pt),
-  let preRM := M.(structure) in
+Lemma lem2 : forall (M : RMC) i j k l pt (p:M) (p_in:p ∈ U_pt),
+  let RM := M.(structure) in
   let coord := M.(coordinates) pt in
   let pt_in := coord.(pt_in) in
   2 * Ｒ i k j l pt * x i p * x j p = 3 * ((∂² (g i j) / ∂ x k l) pt * x i p * x j p).

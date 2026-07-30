@@ -26,6 +26,9 @@ Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
 Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
 
+Parameter sum : (dim -> R) -> R.
+Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+
 Class RM := {
   M :> Set;
   has_metric :> metric M;
@@ -50,7 +53,7 @@ Class has_coordinates {M : RM} (pt : M) := {
   ax0 : ∀ i, x i pt = 0;
   ax1 : ∀ i j, g i j pt = δ i j;
   ax2 : ∀ i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
-  ax3 : ∀ i j k l p (p_in:p ∈ U_pt), ((∂² (g i j) / ∂ x k l) pt * (x k p) * (x l p)) / 2 = - (((Ｒ i k l j pt) * (x k p) * (x l p)) / 3);
+  ax3 : ∀ i j p (p_in:p ∈ U_pt), Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) pt * (x k p) * (x l p)) / 2) = Σ_{k} Σ_{l} (- (((Ｒ i k l j pt) * (x k p) * (x l p)) / 3));
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
@@ -60,9 +63,6 @@ Class RMC := {
 }.
 
 Existing Instance coordinates.
-
-Parameter sum : (dim -> R) -> R.
-Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 
 (** Taylor's theorem for Riemannian metrics *)
 
@@ -97,8 +97,7 @@ rewrite (smoothness2 M p₀) with (p_in := p_in).
 rewrite ax1.
 rewrite under_sigma_0.
 2: intro; rewrite ax2; apply Rmult_0_l.
-rewrite (under_sigma _ _ (fun k => 
-under_sigma _ _ (fun l => ax3 i j k l p p_in))).
+rewrite ax3.
 rewrite Rplus_0_r.
 rewrite (under_sigma _ _ (fun k => min_sum _)).
 rewrite (min_sum).
@@ -116,11 +115,6 @@ Section Riemannian_metrics.
 
 Parameter Gamma : ∀ M : RMC, dim -> dim -> dim -> M -> R.
 Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
-
-Axiom Christoffel_symbols : ∀ (M : RMC) i j p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
-  ∇ i j p₀ = Σ_{k} (∂  Γ^{k}_{i j} / ∂ x k) p₀.
 
 Axiom Christoffel_commutes : ∀ (M : RMC) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
 
@@ -154,6 +148,14 @@ Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 
 Axiom Leibniz_rule : ∀ M (g₁ g₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
   (∂ (g₁ *_fun g₂) / ∂ x k) p = (∂ g₁ / ∂ x k) p * g₂ p + g₁ p * (∂ g₂ / ∂ x k) p.
+
+Lemma lem5 : ∀ (M : RMC) i j k l p₀,
+  let RM := M.(structure) in
+  let coord := M.(coordinates) p₀ in
+  let pt_in := coord.(pt_in) in
+  (∂² (g i j) / ∂ x k l) p₀ = (∂ Γ^{j}_{k i} / ∂ x l) p₀ + (∂ Γ^{i}_{k j} / ∂ x l) p₀.
+Proof.
+Admitted.
 
 Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
   let RM := M.(structure) in

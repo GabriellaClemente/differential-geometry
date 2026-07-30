@@ -145,7 +145,7 @@ Admitted.
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
 
-Lemma lem2 : ∀ (M : RMC) i j (k l:dim) p₀ (p:M) (p_in:p ∈ U_pt),
+Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
   let RM := M.(structure) in
   let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in

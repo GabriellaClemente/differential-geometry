@@ -21,9 +21,9 @@ Parameter O : R -> R.
 Class belongs {M:Type} (P:M->Prop) x := bb : P x.
 Notation "x ∈ P" := (belongs P x) (at level 70).
 
-Parameter partial : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> forall p {_:p ∈ U}, R.
+Parameter partial : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
-Parameter partial2 : forall {M} {U:M->Prop}, (M -> R) -> (dim -> forall p {_:p ∈ U}, R) -> dim -> dim -> forall p {_:p ∈ U}, R.
+Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
 
 Class RM := {
@@ -45,18 +45,18 @@ Existing Instance has_metric.
 Class has_coordinates {M : RM} (pt : M) := {
   U_pt : M -> Prop;
   pt_in : pt ∈ U_pt;
-  x : dim -> forall p {p_in:p ∈ U_pt}, R;
+  x : dim -> ∀ p {p_in:p ∈ U_pt}, R;
   (* A system of coordinates is canonically defined such that: *)
-  ax0 : forall i, x i pt = 0;
-  ax1 : forall i j, g i j pt = δ i j;
-  ax2 : forall i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
-  ax3 : forall i j k l p (p_in:p ∈ U_pt), ((∂² (g i j) / ∂ x k l) pt * (x k p) * (x l p)) / 2 = - (((Ｒ i k l j pt) * (x k p) * (x l p)) / 3);
+  ax0 : ∀ i, x i pt = 0;
+  ax1 : ∀ i j, g i j pt = δ i j;
+  ax2 : ∀ i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
+  ax3 : ∀ i j k l p (p_in:p ∈ U_pt), ((∂² (g i j) / ∂ x k l) pt * (x k p) * (x l p)) / 2 = - (((Ｒ i k l j pt) * (x k p) * (x l p)) / 3);
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
 Class RMC := {
   structure :> RM;
-  coordinates :> forall pt, has_coordinates pt;
+  coordinates :> ∀ pt, has_coordinates pt;
 }.
 
 
@@ -66,34 +66,34 @@ Check @coordinates.
 Parameter sum : (dim -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 
-Axiom smoothness2 : forall M:RMC, forall (pt:M) (p:M),
-let coord := M.(coordinates) pt in
+Axiom smoothness2 : ∀ M:RMC, ∀ (p₀:M) (p:M),
+let coord := M.(coordinates) p₀ in
 let pt_in := coord.(pt_in) in
-forall (p_in:p ∈ U_pt) i j,
+∀ (p_in:p ∈ U_pt) i j,
  g i j p
- = g i j pt + (Σ_{k} ((∂ (g i j) / ∂ x k) pt * x k p))
- + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) pt * x k p * x l p) / 2))
+ = g i j p₀ + (Σ_{k} ((∂ (g i j) / ∂ x k) p₀ * x k p))
+ + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2))
  + O ((norm (fun i => x i p)) ^ 3).
 
 (* Thm: $g_{ij} = \delta_{ij} - \frac{1}{3} \Sigma_{k, l} R_{iklj}x_kx_l + O(\|x\|^3)$ *)
 
-Lemma under_sigma_0 (f : dim -> R) : (forall k, f k = 0) -> Σ_{k} (f k) = 0.
+Lemma under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
 Admitted.
 
-Lemma under_sigma (f g : dim -> R) : (forall k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
+Lemma under_sigma (f g : dim -> R) : (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 Admitted.
 
 Lemma min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
 Admitted.
 
-Theorem Thm1 (M:RMC) : forall (pt:M),
+Theorem Thm1 (M:RMC) : ∀ (p₀:M),
   let preRM := M.(structure) in
-  let coord := M.(coordinates) pt in
-  forall i j (p:M) (p_in:p ∈ U_pt),
-  g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j pt * x k p * x l p /3)) + O ((norm (fun i => x i p)) ^ 3).
+  let coord := M.(coordinates) p₀ in
+  ∀ i j (p:M) (p_in:p ∈ U_pt),
+  g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j p₀ * x k p * x l p /3)) + O ((norm (fun i => x i p)) ^ 3).
 Proof.
-intros pt **.
-rewrite (smoothness2 M pt) with (p_in := p_in).
+intros p₀ **.
+rewrite (smoothness2 M p₀) with (p_in := p_in).
 rewrite ax1.
 rewrite under_sigma_0.
 2: intro; rewrite ax2; apply Rmult_0_l.
@@ -114,42 +114,51 @@ Abort.
 
 Section Riemannian_metrics.
 
-Parameter Gamma : forall M : RMC, dim -> dim -> dim -> M -> R.
+Parameter Gamma : ∀ M : RMC, dim -> dim -> dim -> M -> R.
 Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
 
-Axiom Christoffel_symbols : forall (M : RMC) i j pt,
-  let coord := M.(coordinates) pt in
+Axiom Christoffel_symbols : ∀ (M : RMC) i j p₀,
+  let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
-  ∇ i j pt = Σ_{k} (∂  Γ^{k}_{i j} / ∂ x k) pt.
+  ∇ i j p₀ = Σ_{k} (∂  Γ^{k}_{i j} / ∂ x k) p₀.
 
-Axiom Christoffel_commutes : forall (M : RMC) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
+Axiom Christoffel_commutes : ∀ (M : RMC) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
 
-Axiom Christoffel_sum : forall (M : RMC) i j k l pt,
-  let coord := M.(coordinates) pt in
+Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
+  let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
-  (∂ Γ^{k}_{i j} / ∂ x l) pt + (∂ Γ^{k}_{i l} / ∂ x j) pt + (∂ Γ^{k}_{j l} / ∂ x i) pt = 0.
+  (∂ Γ^{k}_{i j} / ∂ x l) p₀ + (∂ Γ^{k}_{i l} / ∂ x j) p₀ + (∂ Γ^{k}_{j l} / ∂ x i) p₀ = 0.
 
-Axiom Christoffel_R : forall (M : RMC) i j k l pt,
-  let coord := M.(coordinates) pt in
+Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
+  let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
- Ｒ k l i j pt = Σ_{m} (g m l pt * ((∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt)).
+ Ｒ k l i j p₀ = (∂ Γ^{l}_{j k} / ∂ x i) p₀ - (∂ Γ^{l}_{i k} / ∂ x j) p₀.
 
-Lemma lem1 : forall (M : RMC) i j k l pt,
-  let coord := M.(coordinates) pt in
+Lemma lem1 : ∀ (M : RMC) i j k l p₀,
+  let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
- Ｒ k l i j pt = - Σ_{m} (g m l pt * ((∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * (∂ Γ^{m}_{i k} / ∂ x j) pt)).
+ Ｒ k l i j p₀ = - ((∂ Γ^{l}_{i j} / ∂ x k) p₀ + 2 * (∂ Γ^{l}_{i k} / ∂ x j) p₀).
 Proof.
-intros M i j k l pt *.
-assert (forall m, (∂ Γ^{m}_{j k} / ∂ x i) pt - (∂ Γ^{m}_{i k} / ∂ x j) pt = - ((∂ Γ^{m}_{i j} / ∂ x k) pt + 2 * ((∂ Γ^{m}_{i k} / ∂ x j) pt))).
-intro.
+intros M i j k l p₀ *.
 Admitted.
 
-Axiom axR1 : forall (M : RMC) i j k l pt, let RM := M.(structure) in Ｒ i j k l pt = Ｒ k l i j pt.
-Axiom axR2 : forall (M : RMC) i j k l pt, let RM := M.(structure) in Ｒ i j k l pt = - Ｒ j i k l pt.
+Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
+Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
 
-Lemma lem2 : forall (M : RMC) i j k l pt (p:M) (p_in:p ∈ U_pt),
+Lemma lem2 : ∀ (M : RMC) i j k l p₀ (p:M) (p_in:p ∈ U_pt),
   let RM := M.(structure) in
-  let coord := M.(coordinates) pt in
+  let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
-  2 * Ｒ i k j l pt * x i p * x j p = 3 * ((∂² (g i j) / ∂ x k l) pt * x i p * x j p).
+  2 * Ｒ i k j l p₀ * x i p * x j p = 3 * ((∂² (g i j) / ∂ x k l) p₀ * x i p * x j p).
 Proof.
+Admitted.
+
+Axiom Christoffel_split : ∀ (M : RMC) i j k m (p₀:M) p (p_in:p ∈ U_pt),
+  let coord := M.(coordinates) p₀ in
+  let pt_in := coord.(pt_in) in
+  (∂ Γ^{m}_{k i} / ∂ x k) p = Σ_{m} (g m j p * Γ^{m}_{k i} p + g i m p * Γ^{m}_{k j} p).
+
+Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
+
+Axiom Leibniz_rule : ∀ M (g₁ g₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
+  (∂ (g₁ *_fun g₂) / ∂ x k) p = (∂ g₁ / ∂ x k) p * g₂ p + g₁ p * (∂ g₂ / ∂ x k) p.

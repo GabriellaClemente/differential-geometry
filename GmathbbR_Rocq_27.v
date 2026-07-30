@@ -59,12 +59,12 @@ Class RMC := {
   coordinates :> ∀ pt, has_coordinates pt;
 }.
 
-
 Existing Instance coordinates.
 
-Check @coordinates.
 Parameter sum : (dim -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+
+(** Taylor's theorem for Riemannian metrics *)
 
 Axiom smoothness2 : ∀ M:RMC, ∀ (p₀:M) (p:M),
 let coord := M.(coordinates) p₀ in
@@ -145,14 +145,6 @@ Admitted.
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
 
-Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
-  let RM := M.(structure) in
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
-  Σ_{k} Σ_{l} (3 * ((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p)) = Σ_{k} Σ_{l} (2 * Ｒ i k j l p₀ * x k p * x l p).
-Proof.
-Admitted.
-
 Axiom Christoffel_split : ∀ (M : RMC) i j k m (p₀:M) p (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
@@ -162,3 +154,15 @@ Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 
 Axiom Leibniz_rule : ∀ M (g₁ g₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
   (∂ (g₁ *_fun g₂) / ∂ x k) p = (∂ g₁ / ∂ x k) p * g₂ p + g₁ p * (∂ g₂ / ∂ x k) p.
+
+Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
+  let RM := M.(structure) in
+  let coord := M.(coordinates) p₀ in
+  let pt_in := coord.(pt_in) in
+  Σ_{k} Σ_{l} (3 * ((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p)) = Σ_{k} Σ_{l} (2 * Ｒ i k j l p₀ * x k p * x l p).
+Proof.
+Admitted.
+
+(** Weitzenböck's formula *)
+
+

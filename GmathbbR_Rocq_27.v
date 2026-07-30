@@ -145,11 +145,11 @@ Admitted.
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
 
-Lemma lem2 : ∀ (M : RMC) i j k l p₀ (p:M) (p_in:p ∈ U_pt),
+Lemma lem2 : ∀ (M : RMC) i j (k l:dim) p₀ (p:M) (p_in:p ∈ U_pt),
   let RM := M.(structure) in
   let coord := M.(coordinates) p₀ in
   let pt_in := coord.(pt_in) in
-  2 * Ｒ i k j l p₀ * x i p * x j p = 3 * ((∂² (g i j) / ∂ x k l) p₀ * x i p * x j p).
+  Σ_{k} Σ_{l} (3 * ((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p)) = Σ_{k} Σ_{l} (2 * Ｒ i k j l p₀ * x k p * x l p).
 Proof.
 Admitted.
 

@@ -7,11 +7,6 @@ Parameter dim : Type.
 
 Notation "x ^ n" := (pow n x) (at level 30, right associativity).
 
-Class metric (M : Set) : Type := {
-   g : dim->dim->M->R;
-   g_sym i j : g i j = g j i;
-}.
-
 Parameter δ : dim -> dim -> R.
 Parameter norm : (dim -> R) -> R.
 Notation "|| x ||" := (norm x) (at level 0).
@@ -28,6 +23,22 @@ Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at
 
 Parameter sum : (dim -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+
+Lemma under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
+Admitted.
+
+Lemma under_sigma (f g : dim -> R) : (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
+Admitted.
+
+Lemma min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
+Admitted.
+
+(** "Topology-free" Riemannian manifold *)
+
+Class metric (M : Set) : Type := {
+   g : dim->dim->M->R;
+   g_sym i j : g i j = g j i;
+}.
 
 Class RM := {
   M :> Set;
@@ -77,14 +88,7 @@ let pt_in := coord.(pt_in) in
 
 (* Thm: $g_{ij} = \delta_{ij} - \frac{1}{3} \Sigma_{k, l} R_{iklj}x_kx_l + O(\|x\|^3)$ *)
 
-Lemma under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
-Admitted.
-
-Lemma under_sigma (f g : dim -> R) : (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
-Admitted.
-
-Lemma min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
-Admitted.
+Section Riemannian_metrics.
 
 Theorem Thm1 (M:RMC) : ∀ (p₀:M),
   let preRM := M.(structure) in
@@ -104,67 +108,4 @@ rewrite (min_sum).
 rewrite <- Rminus_def.
 reflexivity.
 Qed.
-
-Example circle : RMC.
-unshelve esplit.
-unshelve esplit.
-exact {x : R & { y : R | x * x + y * y = 1} }.
-Abort.
-
-Section Riemannian_metrics.
-
-Parameter Gamma : ∀ M : RMC, dim -> dim -> dim -> M -> R.
-Notation "Γ^{ k }_{ i j }" := (Gamma _ k i j) (at level 0, i, j at level 0).
-
-Axiom Christoffel_commutes : ∀ (M : RMC) i j k, Γ^{k}_{i j} = Γ^{k}_{j i}.
-
-Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
-  (∂ Γ^{k}_{i j} / ∂ x l) p₀ + (∂ Γ^{k}_{i l} / ∂ x j) p₀ + (∂ Γ^{k}_{j l} / ∂ x i) p₀ = 0.
-
-Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
- Ｒ k l i j p₀ = (∂ Γ^{l}_{j k} / ∂ x i) p₀ - (∂ Γ^{l}_{i k} / ∂ x j) p₀.
-
-Lemma lem1 : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
- Ｒ k l i j p₀ = - ((∂ Γ^{l}_{i j} / ∂ x k) p₀ + 2 * (∂ Γ^{l}_{i k} / ∂ x j) p₀).
-Proof.
-intros M i j k l p₀ *.
-Admitted.
-
-Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
-Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
-
-Axiom Christoffel_split : ∀ (M : RMC) i j k m (p₀:M) p (p_in:p ∈ U_pt),
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
-  (∂ Γ^{m}_{k i} / ∂ x k) p = Σ_{m} (g m j p * Γ^{m}_{k i} p + g i m p * Γ^{m}_{k j} p).
-
-Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
-
-Axiom Leibniz_rule : ∀ M (g₁ g₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
-  (∂ (g₁ *_fun g₂) / ∂ x k) p = (∂ g₁ / ∂ x k) p * g₂ p + g₁ p * (∂ g₂ / ∂ x k) p.
-
-Lemma lem5 : ∀ (M : RMC) i j k l p₀,
-  let RM := M.(structure) in
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
-  (∂² (g i j) / ∂ x k l) p₀ = (∂ Γ^{j}_{k i} / ∂ x l) p₀ + (∂ Γ^{i}_{k j} / ∂ x l) p₀.
-Proof.
-Admitted.
-
-Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
-  let RM := M.(structure) in
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
-  Σ_{k} Σ_{l} (3 * ((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p)) = Σ_{k} Σ_{l} (2 * Ｒ i k j l p₀ * x k p * x l p).
-Proof.
-Admitted.
-
-(** Weitzenböck's formula *)
-
 

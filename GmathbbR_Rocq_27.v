@@ -1,4 +1,4 @@
-From Stdlib Require Import Reals Utf8. 
+From Stdlib Require Import Reals Utf8.
 Open Scope R_scope.
 Set Primitive Projections.
 Set Keyed Unification.
@@ -21,8 +21,8 @@ Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
 Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
 
-Parameter sum : (dim -> R) -> R.
-Notation "Σ_{ n } t" := (sum (fun n : dim => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+Parameter sum : forall {A}, (A -> R) -> R.
+Notation "Σ_{ n } t" := (sum (fun n : _ => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 
 Lemma under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
 Admitted.
@@ -175,3 +175,22 @@ Qed.
 
 (** Weitzenböck's formula ... *)
 
+Require Fin.
+Require Import List.
+Import ListNotations.
+
+Parameter update : forall {A} (s:list A), Fin.t (length s) -> A -> list A.
+Parameter nth : forall {A} (s:list A), Fin.t (length s) -> A.
+Axiom update_length : forall {A} (s:list A) k a n, length s = n -> length (update s k a) = n.
+
+Structure Omega M k := {
+  alpha :> forall s : list dim, length s = k -> M -> R;
+  alternating : forall s i s' j s'' p
+     (H1 : length (s ++ [i] ++ s' ++ [j] ++ s'') = k)
+     (H2 : length (s ++ [j] ++ s' ++ [i] ++ s'') = k),
+     alpha (s ++ [i] ++ s' ++ [j] ++ s'') H1 p = - alpha (s ++ [j] ++ s' ++ [i] ++ s'') H2 p;
+}.
+
+Definition nabla_ (M : RMC) k j s (H: length s = k) (alpha : Omega M k) p₀ p (p_in:p ∈ U_pt) :=
+  let coord := M.(coordinates) p₀ in
+  (∂ (alpha s H) / ∂ x j) p - Σ_{l} Σ_{m} Γ^{m}_{j (nth s l )} p * alpha (update s l m) (update_length s _ _ _ H) p.

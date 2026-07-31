@@ -16,7 +16,7 @@ Parameter O : R -> R.
 Class belongs {M:Type} (P:M->Prop) x := bb : P x.
 Notation "x ∈ P" := (belongs P x) (at level 70).
 
-Parameter partial : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> ∀ p {_:p ∈ U}, R.
+Parameter partial : ∀ {M} {U:M->Prop}, (∀ p {_:p ∈ U}, R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f, x, i at level 0).
 Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f, x, i, j at level 0).
@@ -59,6 +59,8 @@ Class RM := {
 Notation "∇" := nabla.
 Notation "Γ^{ k }_{ i j }" := (Gamma k i j) (at level 0, i, j at level 0).
 
+Definition lift {M} {U:M->Prop} f : ∀ p {_:p ∈ U}, R := (fun p _ => f p).
+
 Existing Instance has_metric.
 
 (*Coercion M : RM >-> Sortclass.*) (* needed with Coq <= 8.19 *)
@@ -71,7 +73,7 @@ Class has_coordinates {M : RM} (pt : M) := {
   (* A system of coordinates is canonically defined such that: *)
   ax0 : ∀ i, x i pt = 0;
   ax1 : ∀ i j, g i j pt = δ i j;
-  ax2 : ∀ i j k, (∂ (g i j) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
+  ax2 : ∀ i j k, (∂ (lift (g i j)) / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
       (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
 }.
 
@@ -90,22 +92,21 @@ Axiom smoothness2 : ∀ M:RMC, ∀ (p₀:M) (p:M),
 let coord := M.(coordinates) p₀ in (* To expose "x" *)
 ∀ (p_in:p ∈ U_pt) i j,
  g i j p
- = g i j p₀ + (Σ_{k} ((∂ (g i j) / ∂ x k) p₀ * x k p))
+ = g i j p₀ + (Σ_{k} ((∂ (lift (g i j)) / ∂ x k) p₀ * x k p))
  + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2))
  + O ((norm (fun i => x i p)) ^ 3).
 
 Axiom Christoffel_commutes : ∀ (M : RMC) i j k,
-
    Γ^{k}_{i j} = Γ^{k}_{j i}.
 
 Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
-  (∂ Γ^{k}_{i j} / ∂ x l) p₀ + (∂ Γ^{k}_{i l} / ∂ x j) p₀ + (∂ Γ^{k}_{j l} / ∂ x i) p₀ = 0.
+  (∂ (lift (Γ^{k}_{i j})) / ∂ x l) p₀ + (∂ (lift (Γ^{k}_{i l})) / ∂ x j) p₀ + (∂ (lift (Γ^{k}_{j l})) / ∂ x i) p₀ = 0.
 
 Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
- Ｒ k l i j p₀ = (∂ Γ^{l}_{j k} / ∂ x i) p₀ - (∂ Γ^{l}_{i k} / ∂ x j) p₀.
+ Ｒ k l i j p₀ = (∂ (lift (Γ^{l}_{j k})) / ∂ x i) p₀ - (∂ (lift (Γ^{l}_{i k})) / ∂ x j) p₀.
 
 Lemma lem1 : ∀ (M : RMC) i j k l p₀,
- Ｒ k l i j p₀ = - ((∂ Γ^{l}_{i j} / ∂ x k) p₀ + 2 * (∂ Γ^{l}_{i k} / ∂ x j) p₀).
+ Ｒ k l i j p₀ = - ((∂ (lift (Γ^{l}_{i j})) / ∂ x k) p₀ + 2 * (∂ (lift (Γ^{l}_{i k})) / ∂ x j) p₀).
 Proof.
 intros M i j k l p₀ *.
 Admitted.
@@ -115,16 +116,16 @@ Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l 
 
 Axiom Christoffel_split : ∀ (M : RMC) i j k m (p₀:M) p (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in
-  (∂ Γ^{m}_{k i} / ∂ x k) p = Σ_{m} (g m j p * Γ^{m}_{k i} p + g i m p * Γ^{m}_{k j} p).
+  (∂ (lift (Γ^{m}_{k i})) / ∂ x k) p = Σ_{m} (g m j p * Γ^{m}_{k i} p + g i m p * Γ^{m}_{k j} p).
 
 Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 
 Axiom Leibniz_rule : ∀ M (g₁ g₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
-  (∂ (g₁ *_fun g₂) / ∂ x k) p = (∂ g₁ / ∂ x k) p * g₂ p + g₁ p * (∂ g₂ / ∂ x k) p.
+  (∂ (lift (g₁ *_fun g₂)) / ∂ x k) p = (∂ (lift g₁) / ∂ x k) p * g₂ p + g₁ p * (∂ (lift g₂) / ∂ x k) p.
 
 Lemma lem5 : ∀ (M : RMC) i j k l p₀,
   let coord := M.(coordinates) p₀ in
-  (∂² (g i j) / ∂ x k l) p₀ = (∂ Γ^{j}_{k i} / ∂ x l) p₀ + (∂ Γ^{i}_{k j} / ∂ x l) p₀.
+  (∂² (g i j) / ∂ x k l) p₀ = (∂ (lift (Γ^{j}_{k i})) / ∂ x l) p₀ + (∂ (lift (Γ^{i}_{k j})) / ∂ x l) p₀.
 Proof.
 Admitted.
 
@@ -174,9 +175,11 @@ Parameter update : forall {A} (s:list A), Fin.t (length s) -> A -> list A.
 Parameter nth : forall {A} (s:list A), Fin.t (length s) -> A.
 Axiom update_length : forall {A} (s:list A) k a n, HasLength s n -> HasLength (update s k a) n.
 Existing Instance update_length.
+(*
+Class tensor M k := istensor : forall s : list dim, HasLength s k -> M -> R.
 
 Class Omega M k := {
-  α :> forall s : list dim, HasLength s k -> M -> R;
+  α :> tensor M k;
   alternating : forall s i s' j s'' p
      (H1 : HasLength (s ++ [i] ++ s' ++ [j] ++ s'') k)
      (H2 : HasLength (s ++ [j] ++ s' ++ [i] ++ s'') k),
@@ -185,6 +188,34 @@ Class Omega M k := {
 
 Arguments α {M k Omega} s {_} _.
 
-Definition nabla_ (M : RMC) k j s (H: HasLength s k) (α : Omega M k) p₀ p (p_in:p ∈ U_pt) :=
+Definition nabla_ (M : RMC) k j s (H: HasLength s (1+k)) (α : tensor M (1+k)) p₀ p (p_in:p ∈ U_pt) :=
   let coord := M.(coordinates) p₀ in
-  (∂ (α s _) / ∂ x j) p - (Σ_{l} Σ_{m} Γ^{m}_{j (nth s l )} p * α (update s l m) _ p).
+  (∂ (α s _) / ∂ x j) p - (Σ_{l} Σ_{m} Γ^{m}_{j (nth s l)} p * α (update s l m) _ p).
+*)
+Fixpoint tensor T k :=
+  match k with
+  | 0 => T
+  | S k => dim -> tensor T k
+  end.
+
+Definition function_tensor M U k := ∀ (p:M) {_:p ∈ U}, tensor R k.
+
+Notation "( x ; y )" := (exist _ x y)
+  (at level 0, format "'[' ( x ;  '/ ' y ) ']'").
+
+Section nabla_.
+
+Variable M : RMC.
+Variable p₀ : M.
+Variable p : M.
+Let coord := M.(coordinates) p₀.
+Let U_pt := coord.(U_pt).
+(*Hypothesis p_in:p ∈ U_pt.*)
+
+Fixpoint nabla_ k : function_tensor M U_pt k -> function_tensor M U_pt (S k) :=
+  match k return function_tensor M U_pt k -> function_tensor M U_pt (S k) with
+  | 0 => fun α p H j => (∂ α / ∂ x j) p
+  | S k => fun α p H j i => nabla_ k (fun p H => α p H i) p H j - (Σ_{m} Γ^{m}_{j i} (α p H m))
+  end.
+
+End nabla_.

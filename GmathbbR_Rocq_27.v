@@ -168,18 +168,23 @@ Require Fin.
 Require Import List.
 Import ListNotations.
 
+Class HasLength {A} (s : list A) n := hasLength : length s = n.
+
 Parameter update : forall {A} (s:list A), Fin.t (length s) -> A -> list A.
 Parameter nth : forall {A} (s:list A), Fin.t (length s) -> A.
-Axiom update_length : forall {A} (s:list A) k a n, length s = n -> length (update s k a) = n.
+Axiom update_length : forall {A} (s:list A) k a n, HasLength s n -> HasLength (update s k a) n.
+Existing Instance update_length.
 
-Structure Omega M k := {
-  alpha :> forall s : list dim, length s = k -> M -> R;
+Class Omega M k := {
+  α :> forall s : list dim, HasLength s k -> M -> R;
   alternating : forall s i s' j s'' p
-     (H1 : length (s ++ [i] ++ s' ++ [j] ++ s'') = k)
-     (H2 : length (s ++ [j] ++ s' ++ [i] ++ s'') = k),
-     alpha (s ++ [i] ++ s' ++ [j] ++ s'') H1 p = - alpha (s ++ [j] ++ s' ++ [i] ++ s'') H2 p;
+     (H1 : HasLength (s ++ [i] ++ s' ++ [j] ++ s'') k)
+     (H2 : HasLength (s ++ [j] ++ s' ++ [i] ++ s'') k),
+     α (s ++ [i] ++ s' ++ [j] ++ s'') H1 p = - α (s ++ [j] ++ s' ++ [i] ++ s'') H2 p;
 }.
 
-Definition nabla_ (M : RMC) k j s (H: length s = k) (alpha : Omega M k) p₀ p (p_in:p ∈ U_pt) :=
+Arguments α {M k Omega} s {_} _.
+
+Definition nabla_ (M : RMC) k j s (H: HasLength s k) (α : Omega M k) p₀ p (p_in:p ∈ U_pt) :=
   let coord := M.(coordinates) p₀ in
-  (∂ (alpha s H) / ∂ x j) p - Σ_{l} Σ_{m} Γ^{m}_{j (nth s l )} p * alpha (update s l m) (update_length s _ _ _ H) p.
+  (∂ (α s _) / ∂ x j) p - (Σ_{l} Σ_{m} Γ^{m}_{j (nth s l )} p * α (update s l m) _ p).

@@ -80,13 +80,14 @@ Class RMC := {
   coordinates :> ∀ pt, has_coordinates pt;
 }.
 
+Existing Instance structure.
 Existing Instance coordinates.
+Existing Instance pt_in.
 
 (** Taylor's theorem for Riemannian metrics *)
 
 Axiom smoothness2 : ∀ M:RMC, ∀ (p₀:M) (p:M),
-let coord := M.(coordinates) p₀ in
-let pt_in := coord.(pt_in) in
+let coord := M.(coordinates) p₀ in (* To expose "x" *)
 ∀ (p_in:p ∈ U_pt) i j,
  g i j p
  = g i j p₀ + (Σ_{k} ((∂ (g i j) / ∂ x k) p₀ * x k p))
@@ -94,22 +95,16 @@ let pt_in := coord.(pt_in) in
  + O ((norm (fun i => x i p)) ^ 3).
 
 Axiom Christoffel_commutes : ∀ (M : RMC) i j k,
-  let RM := M.(structure) in
+
    Γ^{k}_{i j} = Γ^{k}_{j i}.
 
 Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
   (∂ Γ^{k}_{i j} / ∂ x l) p₀ + (∂ Γ^{k}_{i l} / ∂ x j) p₀ + (∂ Γ^{k}_{j l} / ∂ x i) p₀ = 0.
 
 Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
  Ｒ k l i j p₀ = (∂ Γ^{l}_{j k} / ∂ x i) p₀ - (∂ Γ^{l}_{i k} / ∂ x j) p₀.
 
 Lemma lem1 : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
  Ｒ k l i j p₀ = - ((∂ Γ^{l}_{i j} / ∂ x k) p₀ + 2 * (∂ Γ^{l}_{i k} / ∂ x j) p₀).
 Proof.
 intros M i j k l p₀ *.
@@ -120,7 +115,6 @@ Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l 
 
 Axiom Christoffel_split : ∀ (M : RMC) i j k m (p₀:M) p (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
   (∂ Γ^{m}_{k i} / ∂ x k) p = Σ_{m} (g m j p * Γ^{m}_{k i} p + g i m p * Γ^{m}_{k j} p).
 
 Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
@@ -129,17 +123,13 @@ Axiom Leibniz_rule : ∀ M (g₁ g₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U},
   (∂ (g₁ *_fun g₂) / ∂ x k) p = (∂ g₁ / ∂ x k) p * g₂ p + g₁ p * (∂ g₂ / ∂ x k) p.
 
 Lemma lem5 : ∀ (M : RMC) i j k l p₀,
-  let RM := M.(structure) in
   let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
   (∂² (g i j) / ∂ x k l) p₀ = (∂ Γ^{j}_{k i} / ∂ x l) p₀ + (∂ Γ^{i}_{k j} / ∂ x l) p₀.
 Proof.
 Admitted.
 
 Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
-  let RM := M.(structure) in
   let coord := M.(coordinates) p₀ in
-  let pt_in := coord.(pt_in) in
   Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2) = Σ_{k} Σ_{l} (Ｒ i k j l p₀ * x k p * x l p / 3).
 Proof.
 Admitted.
@@ -149,12 +139,11 @@ Admitted.
 Section Riemannian_metrics.
 
 Theorem Thm1 (M:RMC) : ∀ (p₀:M),
-  let preRM := M.(structure) in
   let coord := M.(coordinates) p₀ in
   ∀ i j (p:M) (p_in:p ∈ U_pt),
   g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j p₀ * x k p * x l p /3)) + O ((norm (fun i => x i p)) ^ 3).
 Proof.
-intros p₀ **.
+intros p₀ *.
 rewrite (smoothness2 M p₀) with (p_in := p_in).
 rewrite ax1.
 rewrite under_sigma_0.

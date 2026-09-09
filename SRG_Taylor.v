@@ -1,3 +1,16 @@
+(**********************************************************************************)
+(* An experimentation in Synthetic Riemannian Geometry                            *)
+(*                                                                                *)
+(* We study minimal requirements needed to prove the theorem on                   *)
+(* "second order Taylor series of a Riemannian metric in normal coordinates"      *)
+(* This includes:                                                                 *)
+(* - a topology-free definition of Riemannian manifolds                           *)
+(* - an axiomatization of norms, derivatives                                      *)
+(*                                                                                *)
+(* This highlights in particular that verifying a theorem such as the one we      *)
+(* consider actually requires very little prior formal background                 *)
+(**********************************************************************************)
+
 From Stdlib Require Import Reals Utf8.
 Open Scope R_scope.
 Set Primitive Projections.
@@ -164,69 +177,3 @@ rewrite min_sum.
 rewrite <- Rminus_def.
 reflexivity.
 Qed.
-
-(** Weitzenböck's formula ... *)
-
-Require Fin.
-Require Import List.
-Import ListNotations.
-
-Class HasLength {A} (s : list A) n := hasLength : length s = n.
-
-Parameter update : forall {A} (s:list A), Fin.t (length s) -> A -> list A.
-Parameter nth : forall {A} (s:list A), Fin.t (length s) -> A.
-Axiom update_length : forall {A} (s:list A) k a n, HasLength s n -> HasLength (update s k a) n.
-Existing Instance update_length.
-(*
-Class tensor M k := istensor : forall s : list dim, HasLength s k -> M -> R.
-
-Class Omega M k := {
-  α :> tensor M k;
-  alternating : forall s i s' j s'' p
-     (H1 : HasLength (s ++ [i] ++ s' ++ [j] ++ s'') k)
-     (H2 : HasLength (s ++ [j] ++ s' ++ [i] ++ s'') k),
-     α (s ++ [i] ++ s' ++ [j] ++ s'') H1 p = - α (s ++ [j] ++ s' ++ [i] ++ s'') H2 p;
-}.
-
-Arguments α {M k Omega} s {_} _.
-
-Definition nabla_ (M : RMC) k j s (H: HasLength s (1+k)) (α : tensor M (1+k)) p₀ p (p_in:p ∈ U_pt) :=
-  let coord := M.(coordinates) p₀ in
-  (∂ (α s _) / ∂ x j) p - (Σ_{l} Σ_{m} Γ^{m}_{j (nth s l)} p * α (update s l m) _ p).
-*)
-Fixpoint tensor T k :=
-  match k with
-  | 0 => T
-  | S k => dim -> tensor T k
-  end.
-
-Definition function_tensor M U k := ∀ (p:M) {_:p ∈ U}, tensor R k.
-
-Notation "( x ; y )" := (exist _ x y)
-  (at level 0, format "'[' ( x ;  '/ ' y ) ']'").
-
-Section nabla_.
-
-Variable M : RMC.
-Variable p₀ : M.
-Variable p : M.
-Let coord := M.(coordinates) p₀.
-Let U_pt := coord.(U_pt).
-(*Hypothesis p_in:p ∈ U_pt.*)
-
-Variable minus_poly_hack : forall {A}, A -> A -> A.
-Infix "-" := minus_poly_hack.
-
-Variable scalar_poly_hack : forall {A}, R -> A -> A.
-Infix "*" := scalar_poly_hack.
-
-Variable sum_poly_hack : forall {A B}, (A -> B) -> B.
-Notation "Σ_{ n } t" := (sum_poly_hack (fun n : _ => t)).
-
-Fixpoint nabla_ k : function_tensor M U_pt k -> function_tensor M U_pt (S k) :=
-  match k return function_tensor M U_pt k -> function_tensor M U_pt (S k) with
-  | 0 => fun α p H j => (∂ α / ∂ x j) p
-  | S k => fun α p H j i => nabla_ k (fun p H => α p H i) p H j - (Σ_{m} (Γ^{m}_{j i} p * α p H m))
-  end.
-
-End nabla_.

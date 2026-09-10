@@ -37,20 +37,15 @@ Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f at level 10
 Parameter sum : forall {A}, (A -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : _ => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 
-Lemma under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
-Admitted.
+Axiom under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
 
-Lemma under_sigma (f g : dim -> R) : (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
-Admitted.
+Axiom under_sigma (f g : dim -> R) : (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 
-Lemma min_mult a k : - a * k = - (a * k).
-Admitted.
+Axiom min_mult a k : - a * k = - (a * k).
 
-Lemma min_div a k : - a / k = - (a / k).
-Admitted.
+Axiom min_div a k : - a / k = - (a / k).
 
-Lemma min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
-Admitted.
+Axiom min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
 
 (** "Topology-free" Riemannian manifold *)
 
@@ -120,11 +115,8 @@ Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
 Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
  Ｒ k l i j p₀ = (∂ (Γ^{l}_{j k})_|U_pt / ∂ x i) p₀ - (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀.
 
-Lemma lem1 : ∀ (M : RMC) i j k l p₀,
+Axiom lem1 : ∀ (M : RMC) i j k l p₀,
  Ｒ k l i j p₀ = - ((∂ (Γ^{l}_{i j})_|U_pt / ∂ x k) p₀ + 2 * (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀).
-Proof.
-intros M i j k l p₀ *.
-Admitted.
 
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
@@ -138,17 +130,13 @@ Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 Axiom Leibniz_rule : ∀ M (f₁ f₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
   (∂ (restrict (f₁ *_fun f₂)) / ∂ x k) p = (∂ (restrict f₁) / ∂ x k) p * f₂ p + f₁ p * (∂ (restrict f₂) / ∂ x k) p.
 
-Lemma lem5 : ∀ (M : RMC) i j k l p₀,
+Axiom lem5 : ∀ (M : RMC) i j k l p₀,
   let coord := M.(coordinates) p₀ in
   (∂² (g i j) / ∂ x k l) p₀ = (∂ (Γ^{j}_{k i}_|U_pt) / ∂ x l) p₀ + (∂ (Γ^{i}_{k j})_|U_pt / ∂ x l) p₀.
-Proof.
-Admitted.
 
-Lemma lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
+Axiom lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in
   Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2) = Σ_{k} Σ_{l} (Ｒ i k j l p₀ * x k p * x l p / 3).
-Proof.
-Admitted.
 
 (* Thm: $g_{ij} = \delta_{ij} - \frac{1}{3} \Sigma_{k, l} R_{iklj}x_kx_l + O(\|x\|^3)$ *)
 

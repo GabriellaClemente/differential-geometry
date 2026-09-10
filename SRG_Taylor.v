@@ -41,9 +41,9 @@ Axiom under_sigma_0: ∀ (f : dim -> R), (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
 
 Axiom under_sigma: ∀ (f g : dim -> R), (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 
-Axiom min_mult: ∀ a k : R , a * k = - (a * k).
+Axiom min_mult: ∀ a k : R , - a * k = - (a * k).
 
-Axiom min_div: ∀ a k : R , a / k = - (a / k).
+Axiom min_div: ∀ a k : R , - a / k = - (a / k).
 
 Axiom min_sum: ∀ (a : dim -> R), (Σ_{k} -a k=-(Σ_{k} a k)).
 

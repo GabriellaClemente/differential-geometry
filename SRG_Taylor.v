@@ -67,6 +67,10 @@ Parameter O : R -> R.
 Class belongs {M:Type} (P:M->Prop) x := bb : P x.
 Notation "x ∈ P" := (belongs P x) (at level 70).
 
+(** A general notion of restriction of a function *)
+Definition restrict {M} {U:M->Prop} f : ∀ p {_:p ∈ U}, R := (fun p _ => f p).
+Notation "f _| U" := (restrict (U:=U) f) (at level 10).
+
 (** Assumptions about derivatives *)
 Parameter partial : ∀ {M} {U:M->Prop}, (∀ p {_:p ∈ U}, R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f at level 10, x, i at level 0).
@@ -89,11 +93,6 @@ Class RM := {
 }.
 
 Notation "Γ^{ k }_{ i j }" := (Gamma k i j) (at level 0, i, j at level 0).
-
-Definition restrict {M} {U:M->Prop} f : ∀ p {_:p ∈ U}, R := (fun p _ => f p).
-
-Notation "f _| U" := (restrict (U:=U) f) (at level 10).
-
 Existing Instance has_metric.
 
 (* A system of coordinates as an alternative to a topology *)
@@ -104,8 +103,7 @@ Class has_coordinates {M : RM} (pt : M) := {
   (* A system of coordinates is canonically defined such that: *)
   ax0 : ∀ i, x i pt = 0;
   ax1 : ∀ i j, g i j pt = δ i j;
-  ax2 : ∀ i j k, (∂ (g i j)_|U_pt / ∂ x k) pt = 0; (* $\frac{\partial g_{i j}}{\partial x_k}(p) = 0 *)
-      (* $\frac{\partial^2 g_{i j}}{\partial x_k x_l} x_k x_l = Ｒ i k l j x_k x_l *)
+  ax2 : ∀ i j k, (∂ (g i j)_|U_pt / ∂ x k) pt = 0;
 }.
 
 Class RMC := {

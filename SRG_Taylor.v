@@ -58,7 +58,6 @@ Parameter dim : Type.
 
 (** *)
 Definition norm (f : dim -> R) := Rsigma (fun i => f i * f i).
-Parameter norm : (dim -> R) -> R.
 Notation "|| x ||" := (norm x) (at level 0).
 
 (** Big O *)
@@ -147,15 +146,9 @@ Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 Axiom Leibniz_rule : ∀ M (f₁ f₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
   (∂ (restrict (f₁ *_fun f₂)) / ∂ x k) p = (∂ (restrict f₁) / ∂ x k) p * f₂ p + f₁ p * (∂ (restrict f₂) / ∂ x k) p.
 
-Axiom lem5 : ∀ (M : RMC) i j k l p₀,
-  let coord := M.(coordinates) p₀ in
-  (∂² (g i j) / ∂ x k l) p₀ = (∂ (Γ^{j}_{k i}_|U_pt) / ∂ x l) p₀ + (∂ (Γ^{i}_{k j})_|U_pt / ∂ x l) p₀.
-
 Axiom lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in
   Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2) = Σ_{k} Σ_{l} (Ｒ i k j l p₀ * x k p * x l p / 3).
-
-(* Thm: $g_{ij} = \delta_{ij} - \frac{1}{3} \Sigma_{k, l} R_{iklj}x_kx_l + O(\|x\|^3)$ *)
 
 Section Riemannian_metrics.
 

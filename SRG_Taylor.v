@@ -16,14 +16,18 @@ Open Scope R_scope.
 Set Primitive Projections.
 Set Keyed Unification.
 
-Parameter dim : Type.
-
 Notation "x ^ n" := (pow n x) (at level 30, right associativity).
 
-Parameter δ : dim -> dim -> R.
+(** Dirac function *)
+Parameter δ : forall {C}, C -> C -> R.
+
+Parameter dim : Type.
+
+(** *)
 Parameter norm : (dim -> R) -> R.
 Notation "|| x ||" := (norm x) (at level 0).
 
+(** Big O *)
 Parameter O : R -> R.
 
 Class belongs {M:Type} (P:M->Prop) x := bb : P x.
@@ -31,6 +35,7 @@ Notation "x ∈ P" := (belongs P x) (at level 70).
 
 Parameter partial : ∀ {M} {U:M->Prop}, (∀ p {_:p ∈ U}, R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f at level 10, x, i at level 0).
+
 Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f at level 10, x, i, j at level 0).
 
@@ -73,8 +78,6 @@ Notation "f _| U" := (restrict (U:=U) f) (at level 10).
 
 Existing Instance has_metric.
 
-(*Coercion M : RM >-> Sortclass.*) (* needed with Coq <= 8.19 *)
-
 (* A system of coordinates as an alternative to a topology *)
 Class has_coordinates {M : RM} (pt : M) := {
   U_pt : M -> Prop;
@@ -99,24 +102,24 @@ Existing Instance pt_in.
 (** Taylor's theorem for Riemannian metrics *)
 
 Axiom smoothness2 : ∀ M:RMC, ∀ (p₀:M) (p:M),
-let coord := M.(coordinates) p₀ in (* To expose "x" *)
-∀ (p_in:p ∈ U_pt) i j,
- g i j p
- = g i j p₀ + (Σ_{k} ((∂ (g i j)_|U_pt / ∂ x k) p₀ * x k p))
- + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2))
- + O ((norm (fun i => x i p)) ^ 3).
+  let coord := M.(coordinates) p₀ in (* To expose "x" *)
+  ∀ (p_in:p ∈ U_pt) i j,
+    g i j p
+    = g i j p₀ + (Σ_{k} ((∂ (g i j)_|U_pt / ∂ x k) p₀ * x k p))
+    + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2))
+    + O ((norm (fun i => x i p)) ^ 3).
 
 Axiom Christoffel_commutes : ∀ (M : RMC) i j k,
-   Γ^{k}_{i j} = Γ^{k}_{j i}.
+  Γ^{k}_{i j} = Γ^{k}_{j i}.
 
 Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
   (∂ (Γ^{k}_{i j})_|U_pt / ∂ x l) p₀ + (∂ (Γ^{k}_{i l})_|U_pt / ∂ x j) p₀ + (∂ (Γ^{k}_{j l})_|U_pt / ∂ x i) p₀ = 0.
 
 Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
- Ｒ k l i j p₀ = (∂ (Γ^{l}_{j k})_|U_pt / ∂ x i) p₀ - (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀.
+  Ｒ k l i j p₀ = (∂ (Γ^{l}_{j k})_|U_pt / ∂ x i) p₀ - (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀.
 
 Axiom lem1 : ∀ (M : RMC) i j k l p₀,
- Ｒ k l i j p₀ = - ((∂ (Γ^{l}_{i j})_|U_pt / ∂ x k) p₀ + 2 * (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀).
+  Ｒ k l i j p₀ = - ((∂ (Γ^{l}_{i j})_|U_pt / ∂ x k) p₀ + 2 * (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀).
 
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.

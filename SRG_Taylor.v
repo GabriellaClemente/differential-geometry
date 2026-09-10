@@ -124,10 +124,6 @@ Axiom lem1 : ∀ (M : RMC) i j k l p₀,
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
 
-Axiom Christoffel_split : ∀ (M : RMC) i j k m (p₀:M) p (p_in:p ∈ U_pt),
-  let coord := M.(coordinates) p₀ in
-  (∂ (Γ^{m}_{k i})_|U_pt / ∂ x k) p = Σ_{m} (g m j p * Γ^{m}_{k i} p + g i m p * Γ^{m}_{k j} p).
-
 Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 
 Axiom Leibniz_rule : ∀ M (f₁ f₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},

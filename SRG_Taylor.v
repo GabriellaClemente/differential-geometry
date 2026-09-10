@@ -11,12 +11,33 @@
 (* consider actually requires very little prior formal background                 *)
 (**********************************************************************************)
 
-From Stdlib Require Import Reals Utf8.
-Open Scope R_scope.
+From Stdlib Require Import Utf8.
 Set Primitive Projections.
 Set Keyed Unification.
 
-Notation "x ^ n" := (pow n x) (at level 30, right associativity).
+Parameter R : Type.
+Declare Scope R_scope.
+Bind Scope R_scope with R.
+Open Scope R_scope.
+Parameter R0 : R.
+Notation "0" := R0 : R_scope.
+Parameter R1 : R.
+Notation "1" := R1 : R_scope.
+Parameter Rplus : R -> R -> R.
+Infix "+" := Rplus : R_scope.
+Parameter Rmult : R -> R -> R.
+Infix "*" := Rmult : R_scope.
+Parameter Rdiv : R -> R -> R.
+Infix "/" := Rdiv : R_scope.
+Parameter Rpow : R -> nat -> R.
+Infix "^" := Rpow : R_scope.
+Parameter Ropp : R -> R.
+Notation "- x" := (Ropp x) : R_scope.
+Notation "x - y" := (x + - y) : R_scope.
+Notation "2" := (Rplus R1 R1) : R_scope.
+Notation "3" := (Rplus 2 R1) : R_scope.
+Axiom Rplus_0_r : forall x : R, x + 0 = x.
+Axiom Rmult_0_l : forall x : R, 0 * x = 0.
 
 (** Dirac function *)
 Parameter δ : forall {C}, C -> C -> R.
@@ -161,6 +182,5 @@ rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun k => f_equal (fun y => y
 rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun k => min_div _ _))).
 rewrite (under_sigma _ _ (fun k => min_sum _)).
 rewrite min_sum.
-rewrite <- Rminus_def.
 reflexivity.
 Qed.

@@ -16,8 +16,6 @@ Set Primitive Projections.
 Set Keyed Unification.
 
 (** Needed assumptions about real numbers *)
-
-(** Basic assumption *)
 Parameter R : Type.
 Declare Scope R_scope.
 Bind Scope R_scope with R.
@@ -44,21 +42,22 @@ Axiom Rmult_0_l : forall x : R, 0 * x = 0.
 Axiom Rmin_mult: ∀ a k : R , - a * k = - (a * k).
 Axiom Rmin_div: ∀ a k : R , - a / k = - (a / k).
 
-(**Assuming a summation operator in R *)
-Parameter Rsigma : forall {A}, (A -> R) -> R.
-Notation "Σ_{ n } t" := (Rsigma (fun n => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
-Axiom Runder_sigma_0: ∀ {A} (f : A -> R), (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
-Axiom Runder_sigma: ∀ {A} (f g : A -> R), (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
-Axiom Rmin_sigma: ∀ {A} (f : A -> R), (Σ_{k} - f k=-(Σ_{k} f k)).
-
-(** Kronecker symbol *)
-Parameter δ : forall {C}, C -> C -> R.
-
+(** A dimension is fixed, intended to be the finite set {1,...,n} for some integer n *)
 Parameter dim : Type.
 
-(** *)
-Definition norm (f : dim -> R) := Rsigma (fun i => f i * f i).
-Notation "|| x ||" := (norm x) (at level 0).
+(** Assuming a summation operator on the dimension in R *)
+Parameter Rsigma : (dim -> R) -> R.
+Notation "Σ_{ n } t" := (Rsigma (fun n => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+Axiom Runder_sigma_0: ∀ f : dim -> R, (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
+Axiom Runder_sigma: ∀ f g : dim -> R, (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
+Axiom Rmin_sigma: ∀ f : dim -> R, (Σ_{k} - f k=-(Σ_{k} f k)).
+
+(** Kronecker symbol *)
+Parameter δ : dim -> dim -> R.
+
+(** We assume the existence of a norm on R^dim *)
+Axiom Rnorm : (dim -> R) -> R.
+Notation "|| x ||" := (Rnorm x) (at level 1, x at level 0).
 
 (** Big O *)
 Parameter O : R -> R.
@@ -77,17 +76,17 @@ Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f at level 10, x, i 
 Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f at level 10, x, i, j at level 0).
 
-(** "Topology-free" Riemannian manifold *)
+(**********************************************************************************)
+(** Synthetic Riemannian manifold *)
 
 Class metric (M : Set) : Type := {
-   g : dim->dim->M->R;
+   g : dim -> dim -> M -> R;
    g_sym i j : g i j = g j i;
 }.
 
 Class RM := {
   M :> Set;
   has_metric :> metric M;
-  (* Curvature is morally derivable from g (via nabla), but it is simpler to axiomatize it *)
   Ｒ : dim -> dim -> dim -> dim -> M -> R;
   Gamma : dim -> dim -> dim -> M -> R;
 }.
@@ -118,13 +117,13 @@ Existing Instance coordinates.
 
 (** Taylor's theorem for Riemannian metrics *)
 
-Axiom smoothness2 : ∀ M:RMC, ∀ (p₀:M) (p:M),
-  let coord := M.(coordinates) p₀ in (* To expose "x" *)
+Axiom synthetic_smoothness : ∀ M:RMC, ∀ (p₀:M) (p:M),
+  let coord := M.(coordinates) p₀ in (* To ensure "x" is a known notation *)
   ∀ (p_in:p ∈ U_pt) i j,
     g i j p
     = g i j p₀ + (Σ_{k} ((∂ (g i j)_|U_pt / ∂ x k) p₀ * x k p))
     + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2))
-    + O ((norm (fun i => x i p)) ^ 3).
+    + O ((|| (fun i => x i p) ||) ^ 3).
 
 Axiom Christoffel_commutes : ∀ (M : RMC) i j k,
   Γ^{k}_{i j} = Γ^{k}_{j i}.
@@ -135,14 +134,10 @@ Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
 Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
   Ｒ k l i j p₀ = (∂ (Γ^{l}_{j k})_|U_pt / ∂ x i) p₀ - (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀.
 
-Axiom lem1 : ∀ (M : RMC) i j k l p₀,
-  Ｒ k l i j p₀ = - ((∂ (Γ^{l}_{i j})_|U_pt / ∂ x k) p₀ + 2 * (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀).
-
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
 
 Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
-
 Axiom Leibniz_rule : ∀ M (f₁ f₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
   (∂ (restrict (f₁ *_fun f₂)) / ∂ x k) p = (∂ (restrict f₁) / ∂ x k) p * f₂ p + f₁ p * (∂ (restrict f₂) / ∂ x k) p.
 
@@ -150,15 +145,13 @@ Axiom lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in
   Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2) = Σ_{k} Σ_{l} (Ｒ i k j l p₀ * x k p * x l p / 3).
 
-Section Riemannian_metrics.
-
 Theorem Thm1 (M:RMC) : ∀ (p₀:M),
   let coord := M.(coordinates) p₀ in
   ∀ i j (p:M) (p_in:p ∈ U_pt),
-  g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j p₀ * x k p * x l p /3)) + O ((norm (fun i => x i p)) ^ 3).
+  g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j p₀ * x k p * x l p /3)) + O (|| (fun i => x i p) || ^ 3).
 Proof.
 intros p₀ *.
-rewrite (smoothness2 M p₀) with (p_in := p_in).
+rewrite (synthetic_smoothness M p₀) with (p_in := p_in).
 rewrite ax1.
 rewrite Runder_sigma_0.
 2: intro; rewrite ax2; apply Rmult_0_l.

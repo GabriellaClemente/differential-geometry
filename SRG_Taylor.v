@@ -15,6 +15,9 @@ From Stdlib Require Import Utf8.
 Set Primitive Projections.
 Set Keyed Unification.
 
+(** Needed assumptions about real numbers *)
+
+(** Basic assumption *)
 Parameter R : Type.
 Declare Scope R_scope.
 Bind Scope R_scope with R.
@@ -38,6 +41,15 @@ Notation "2" := (Rplus R1 R1) : R_scope.
 Notation "3" := (Rplus 2 R1) : R_scope.
 Axiom Rplus_0_r : forall x : R, x + 0 = x.
 Axiom Rmult_0_l : forall x : R, 0 * x = 0.
+Axiom Rmin_mult: ∀ a k : R , - a * k = - (a * k).
+Axiom Rmin_div: ∀ a k : R , - a / k = - (a / k).
+
+(**Assuming a summation operator in R *)
+Parameter Rsigma : forall {A}, (A -> R) -> R.
+Notation "Σ_{ n } t" := (Rsigma (fun n => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
+Axiom Runder_sigma_0: ∀ {A} (f : A -> R), (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
+Axiom Runder_sigma: ∀ {A} (f g : A -> R), (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
+Axiom Rmin_sigma: ∀ {A} (f : A -> R), (Σ_{k} - f k=-(Σ_{k} f k)).
 
 (** Dirac function *)
 Parameter δ : forall {C}, C -> C -> R.
@@ -51,27 +63,15 @@ Notation "|| x ||" := (norm x) (at level 0).
 (** Big O *)
 Parameter O : R -> R.
 
+(** A specific class and notation to support inference of side conditions about belonging *)
 Class belongs {M:Type} (P:M->Prop) x := bb : P x.
 Notation "x ∈ P" := (belongs P x) (at level 70).
 
+(** Assumptions about derivatives *)
 Parameter partial : ∀ {M} {U:M->Prop}, (∀ p {_:p ∈ U}, R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂ f / ∂ x i" := (partial f x i) (at level 10, f at level 10, x, i at level 0).
-
 Parameter partial2 : ∀ {M} {U:M->Prop}, (M -> R) -> (dim -> ∀ p {_:p ∈ U}, R) -> dim -> dim -> ∀ p {_:p ∈ U}, R.
 Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f at level 10, x, i, j at level 0).
-
-Parameter sum : forall {A}, (A -> R) -> R.
-Notation "Σ_{ n } t" := (sum (fun n : _ => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
-
-Axiom under_sigma_0: ∀ (f : dim -> R), (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
-
-Axiom under_sigma: ∀ (f g : dim -> R), (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
-
-Axiom min_mult: ∀ a k : R , - a * k = - (a * k).
-
-Axiom min_div: ∀ a k : R , - a / k = - (a / k).
-
-Axiom min_sum: ∀ (a : dim -> R), (Σ_{k} -a k=-(Σ_{k} a k)).
 
 (** "Topology-free" Riemannian manifold *)
 
@@ -167,17 +167,17 @@ Proof.
 intros p₀ *.
 rewrite (smoothness2 M p₀) with (p_in := p_in).
 rewrite ax1.
-rewrite under_sigma_0.
+rewrite Runder_sigma_0.
 2: intro; rewrite ax2; apply Rmult_0_l.
 rewrite lem2.
 rewrite Rplus_0_r.
-rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR1 _ _ _ _ _ _)))).
-rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR2 _ _ _ _ _ _)))).
-rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR1 _ _ _ _ _ _)))).
-rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun k => f_equal (fun y => y * _ / _) (min_mult _ _)))).
-rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun k => f_equal (fun y => y / _) (min_mult _ _)))).
-rewrite (under_sigma _ _ (fun k => under_sigma _ _ (fun k => min_div _ _))).
-rewrite (under_sigma _ _ (fun k => min_sum _)).
-rewrite min_sum.
+rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR1 _ _ _ _ _ _)))).
+rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR2 _ _ _ _ _ _)))).
+rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR1 _ _ _ _ _ _)))).
+rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun k => f_equal (fun y => y * _ / _) (Rmin_mult _ _)))).
+rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun k => f_equal (fun y => y / _) (Rmin_mult _ _)))).
+rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun k => Rmin_div _ _))).
+rewrite (Runder_sigma _ _ (fun k => Rmin_sigma _)).
+rewrite Rmin_sigma.
 reflexivity.
 Qed.

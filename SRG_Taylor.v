@@ -51,12 +51,13 @@ Axiom Runder_sigma_0: ∀ {A} (f : A -> R), (∀ k, f k = 0) -> Σ_{k} (f k) = 0
 Axiom Runder_sigma: ∀ {A} (f g : A -> R), (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 Axiom Rmin_sigma: ∀ {A} (f : A -> R), (Σ_{k} - f k=-(Σ_{k} f k)).
 
-(** Dirac function *)
+(** Kronecker symbol *)
 Parameter δ : forall {C}, C -> C -> R.
 
 Parameter dim : Type.
 
 (** *)
+Definition norm (f : dim -> R) := Rsigma (fun i => f i * f i).
 Parameter norm : (dim -> R) -> R.
 Notation "|| x ||" := (norm x) (at level 0).
 
@@ -64,7 +65,7 @@ Notation "|| x ||" := (norm x) (at level 0).
 Parameter O : R -> R.
 
 (** A specific class and notation to support inference of side conditions about belonging *)
-Class belongs {M:Type} (P:M->Prop) x := bb : P x.
+Class belongs {M:Type} (P:M->Prop) x := belongs_intro : P x.
 Notation "x ∈ P" := (belongs P x) (at level 70).
 
 (** A general notion of restriction of a function *)
@@ -106,6 +107,8 @@ Class has_coordinates {M : RM} (pt : M) := {
   ax2 : ∀ i j k, (∂ (g i j)_|U_pt / ∂ x k) pt = 0;
 }.
 
+Existing Instance pt_in.
+
 Class RMC := {
   structure :> RM;
   coordinates :> ∀ pt, has_coordinates pt;
@@ -113,7 +116,6 @@ Class RMC := {
 
 Existing Instance structure.
 Existing Instance coordinates.
-Existing Instance pt_in.
 
 (** Taylor's theorem for Riemannian metrics *)
 

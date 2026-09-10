@@ -83,14 +83,11 @@ Class metric (M : Set) : Type := {
 Class RM := {
   M :> Set;
   has_metric :> metric M;
-  (* nabla is morally derivable from g but via a differential equation, so we axiomatize it instead *)
-  nabla : dim -> dim -> M -> R;
   (* Curvature is morally derivable from g (via nabla), but it is simpler to axiomatize it *)
   Ｒ : dim -> dim -> dim -> dim -> M -> R;
   Gamma : dim -> dim -> dim -> M -> R;
 }.
 
-Notation "∇" := nabla.
 Notation "Γ^{ k }_{ i j }" := (Gamma k i j) (at level 0, i, j at level 0).
 
 Definition restrict {M} {U:M->Prop} f : ∀ p {_:p ∈ U}, R := (fun p _ => f p).

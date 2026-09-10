@@ -94,22 +94,21 @@ Class RM := {
 Notation "Γ^{ k }_{ i j }" := (Gamma k i j) (at level 0, i, j at level 0).
 Existing Instance has_metric.
 
-(* A system of coordinates as an alternative to a topology *)
-Class has_coordinates {M : RM} (pt : M) := {
-  U_pt : M -> Prop;
-  pt_in : pt ∈ U_pt;
-  x : dim -> ∀ p {p_in:p ∈ U_pt}, R;
+Class has_coordinates {M : RM} (p₀ : M) := {
+  U_p₀ : M -> Prop;
+  p₀_in : p₀ ∈ U_p₀;
+  x : dim -> ∀ p {p_in:p ∈ U_p₀}, R;
   (* A system of coordinates is canonically defined such that: *)
-  ax0 : ∀ i, x i pt = 0;
-  ax1 : ∀ i j, g i j pt = δ i j;
-  ax2 : ∀ i j k, (∂ (g i j)_|U_pt / ∂ x k) pt = 0;
+  ax0 : ∀ i, x i p₀ = 0;
+  ax1 : ∀ i j, g i j p₀ = δ i j;
+  ax2 : ∀ i j k, (∂ (g i j)_|U_p₀ / ∂ x k) p₀ = 0;
 }.
 
-Existing Instance pt_in.
+Existing Instance p₀_in.
 
 Class RMC := {
   structure :> RM;
-  coordinates :> ∀ pt, has_coordinates pt;
+  coordinates :> ∀ p₀, has_coordinates p₀;
 }.
 
 Existing Instance structure.
@@ -119,9 +118,9 @@ Existing Instance coordinates.
 
 Axiom synthetic_smoothness : ∀ M:RMC, ∀ (p₀:M) (p:M),
   let coord := M.(coordinates) p₀ in (* To ensure "x" is a known notation *)
-  ∀ (p_in:p ∈ U_pt) i j,
+  ∀ (p_in:p ∈ U_p₀) i j,
     g i j p
-    = g i j p₀ + (Σ_{k} ((∂ (g i j)_|U_pt / ∂ x k) p₀ * x k p))
+    = g i j p₀ + (Σ_{k} ((∂ (g i j)_|U_p₀ / ∂ x k) p₀ * x k p))
     + (Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2))
     + O ((|| (fun i => x i p) ||) ^ 3).
 
@@ -129,10 +128,10 @@ Axiom Christoffel_commutes : ∀ (M : RMC) i j k,
   Γ^{k}_{i j} = Γ^{k}_{j i}.
 
 Axiom Christoffel_sum : ∀ (M : RMC) i j k l p₀,
-  (∂ (Γ^{k}_{i j})_|U_pt / ∂ x l) p₀ + (∂ (Γ^{k}_{i l})_|U_pt / ∂ x j) p₀ + (∂ (Γ^{k}_{j l})_|U_pt / ∂ x i) p₀ = 0.
+  (∂ (Γ^{k}_{i j})_|U_p₀ / ∂ x l) p₀ + (∂ (Γ^{k}_{i l})_|U_p₀ / ∂ x j) p₀ + (∂ (Γ^{k}_{j l})_|U_p₀ / ∂ x i) p₀ = 0.
 
 Axiom Christoffel_R : ∀ (M : RMC) i j k l p₀,
-  Ｒ k l i j p₀ = (∂ (Γ^{l}_{j k})_|U_pt / ∂ x i) p₀ - (∂ (Γ^{l}_{i k})_|U_pt / ∂ x j) p₀.
+  Ｒ k l i j p₀ = (∂ (Γ^{l}_{j k})_|U_p₀ / ∂ x i) p₀ - (∂ (Γ^{l}_{i k})_|U_p₀ / ∂ x j) p₀.
 
 Axiom axR1 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = Ｒ k l i j p₀.
 Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l p₀ = - Ｒ j i k l p₀.
@@ -141,13 +140,13 @@ Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 Axiom Leibniz_rule : ∀ M (f₁ f₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
   (∂ (f₁ *_fun f₂)_|U / ∂ x k) p = (∂ f₁ _|U / ∂ x k) p * f₂ p + f₁ p * (∂ f₂ _|U / ∂ x k) p.
 
-Axiom lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
+Axiom lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_p₀),
   let coord := M.(coordinates) p₀ in
   Σ_{k} Σ_{l} (((∂² (g i j) / ∂ x k l) p₀ * x k p * x l p) / 2) = Σ_{k} Σ_{l} (Ｒ i k j l p₀ * x k p * x l p / 3).
 
 Theorem Thm1 (M:RMC) : ∀ (p₀:M),
   let coord := M.(coordinates) p₀ in
-  ∀ i j (p:M) (p_in:p ∈ U_pt),
+  ∀ i j (p:M) (p_in:p ∈ U_p₀),
   g i j p = δ i j - (Σ_{k} Σ_{l} (Ｒ i k l j p₀ * x k p * x l p /3)) + O (|| (fun i => x i p) || ^ 3).
 Proof.
 intros p₀ *.

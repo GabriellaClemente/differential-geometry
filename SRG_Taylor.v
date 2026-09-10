@@ -139,7 +139,7 @@ Axiom axR2 : ∀ (M : RMC) i j k l p₀, let RM := M.(structure) in Ｒ i j k l 
 
 Notation "f *_fun g" := (fun x => f x * g x) (at level 50).
 Axiom Leibniz_rule : ∀ M (f₁ f₂ : M -> R) U (x : dim -> ∀ p {_:p ∈ U}, R) k p {p_in:p ∈ U},
-  (∂ (restrict (f₁ *_fun f₂)) / ∂ x k) p = (∂ (restrict f₁) / ∂ x k) p * f₂ p + f₁ p * (∂ (restrict f₂) / ∂ x k) p.
+  (∂ (f₁ *_fun f₂)_|U / ∂ x k) p = (∂ (f₁)_|U / ∂ x k) p * f₂ p + f₁ p * (∂ (f₂)_|U / ∂ x k) p.
 
 Axiom lem2 : ∀ (M : RMC) i j p₀ (p:M) (p_in:p ∈ U_pt),
   let coord := M.(coordinates) p₀ in

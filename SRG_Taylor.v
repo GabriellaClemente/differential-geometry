@@ -99,9 +99,9 @@ Class has_coordinates {M : RM} (p₀ : M) := {
   p₀_in : p₀ ∈ U_p₀;
   x : dim -> ∀ p {p_in:p ∈ U_p₀}, R;
   (* A system of coordinates is canonically defined such that: *)
-  ax0 : ∀ i, x i p₀ = 0;
-  ax1 : ∀ i j, g i j p₀ = δ i j;
-  ax2 : ∀ i j k, (∂ (g i j)_|U_p₀ / ∂ x k) p₀ = 0;
+  ax1 : ∀ i, x i p₀ = 0;
+  ax2 : ∀ i j, g i j p₀ = δ i j;
+  ax3 : ∀ i j k, (∂ (g i j)_|U_p₀ / ∂ x k) p₀ = 0;
 }.
 
 Existing Instance p₀_in.
@@ -151,9 +151,9 @@ Theorem Thm1 (M:RMC) : ∀ (p₀:M),
 Proof.
 intros p₀ *.
 rewrite (synthetic_smoothness M p₀) with (p_in := p_in).
-rewrite ax1.
+rewrite ax2.
 rewrite Runder_sigma_0.
-2: intro; rewrite ax2; apply Rmult_0_l.
+2: intro; rewrite ax3; apply Rmult_0_l.
 rewrite lem2.
 rewrite Rplus_0_r.
 rewrite (Runder_sigma _ _ (fun k => Runder_sigma _ _ (fun l => f_equal (fun y => y * _ * _ / _) (axR1 _ _ _ _ _ _)))).

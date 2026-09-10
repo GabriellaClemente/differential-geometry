@@ -37,15 +37,15 @@ Notation "∂² f / ∂ x i j" := (partial2 f x i j) (at level 10, f at level 10
 Parameter sum : forall {A}, (A -> R) -> R.
 Notation "Σ_{ n } t" := (sum (fun n : _ => t)) (at level 50, t at level 50, format "Σ_{ n }  t").
 
-Axiom under_sigma_0 (f : dim -> R) : (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
+Axiom under_sigma_0: ∀ (f : dim -> R), (∀ k, f k = 0) -> Σ_{k} (f k) = 0.
 
-Axiom under_sigma (f g : dim -> R) : (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
+Axiom under_sigma: ∀ (f g : dim -> R), (∀ k, f k = g k) -> Σ_{k} (f k) = Σ_{k} (g k).
 
-Axiom min_mult a k : - a * k = - (a * k).
+Axiom min_mult: ∀ a k : - , a * k = - (a * k).
 
-Axiom min_div a k : - a / k = - (a / k).
+Axiom min_div: ∀ a k : -, a / k = - (a / k).
 
-Axiom min_sum (a : dim -> R) : (Σ_{k} -a k=-(Σ_{k} a k)).
+Axiom min_sum: ∀ (a : dim -> R), (Σ_{k} -a k=-(Σ_{k} a k)).
 
 (** "Topology-free" Riemannian manifold *)
 
